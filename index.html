@@ -53,7 +53,7 @@
       to   { transform: translateY(-120vh) scale(1.4); opacity: 0; }
     }
 
-    /* Glow */
+    /* Glow effect */
     .glow {
       position: fixed;
       inset: 0;
@@ -68,8 +68,6 @@
     #confettiCanvas {
       position: fixed;
       inset: 0;
-      width: 100vw;
-      height: 100vh;
       pointer-events: none;
       z-index: 10;
     }
@@ -199,7 +197,7 @@
   </main>
 
   <script>
-    /* Floating hearts */
+    // Floating hearts
     const hearts = document.getElementById("hearts");
     const emojis = ["💖","💘","💕","💗","💝"];
     for (let i = 0; i < 50; i++) {
@@ -218,31 +216,31 @@
     const result = document.getElementById("result");
     const hint = document.getElementById("hint");
 
-    /* ---- CONFETTI ---- */
+    // Confetti
     const confettiCanvas = document.getElementById("confettiCanvas");
-
     function resizeConfettiCanvas() {
       const dpr = Math.max(1, window.devicePixelRatio || 1);
-      confettiCanvas.width = window.innerWidth * dpr;
-      confettiCanvas.height = window.innerHeight * dpr;
+      confettiCanvas.width = Math.floor(window.innerWidth * dpr);
+      confettiCanvas.height = Math.floor(window.innerHeight * dpr);
       confettiCanvas.style.width = window.innerWidth + "px";
       confettiCanvas.style.height = window.innerHeight + "px";
     }
 
     resizeConfettiCanvas();
     window.addEventListener("resize", resizeConfettiCanvas);
-    const confettiInstance = confetti.create(confettiCanvas, { resize: true, useWorker: true });
+    window.addEventListener("orientationchange", () => setTimeout(resizeConfettiCanvas, 150));
 
-    /* YES BUTTON GROW LOGIC */
+    const confettiInstance = confetti.create(confettiCanvas, { useWorker: true });
+
+    // Yes button grow
     let yesScale = 1;
     function growYes() {
       yesScale = Math.min(2.5, yesScale + 0.12);
       yesBtn.style.transform = `translateY(-50%) scale(${yesScale})`;
     }
 
-    function clamp(n, min, max) {
-      return Math.max(min, Math.min(max, n));
-    }
+    // No button runs away
+    function clamp(n, min, max) { return Math.max(min, Math.min(max, n)); }
 
     function moveNo(px, py) {
       const z = zone.getBoundingClientRect();
@@ -272,25 +270,22 @@
       if (d < 140) moveNo(e.clientX, e.clientY);
     });
 
+    noBtn.addEventListener("click", e => e.preventDefault());
+
     yesBtn.addEventListener("click", () => {
       zone.style.display = "none";
       hint.style.display = "none";
       result.style.display = "block";
 
-      // Confetti from center of screen
-      const duration = 2000;
-      const end = Date.now() + duration;
+      resizeConfettiCanvas(); // ✅ ensure correct size before firing
 
-      (function frame() {
-        confettiInstance({
-          particleCount: 8,
-          angle: Math.random() * 60 + 60,
-          spread: 55,
-          origin: { x: Math.random(), y: Math.random() * 0.3 },
-          colors: ["#ff3b7a", "#ff7aa2", "#ffd1e3"]
-        });
-        if (Date.now() < end) requestAnimationFrame(frame);
-      })();
+      confettiInstance({
+        particleCount: 320,
+        spread: 160,
+        startVelocity: 65,
+        origin: { x: 0.5, y: 0.5 },
+        colors: ["#ff3b7a", "#ff7aa2", "#ffd1e3"]
+      });
     });
   </script>
 </body>
