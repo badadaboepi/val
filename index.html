@@ -64,9 +64,12 @@
       z-index: 1;
     }
 
+    /* Confetti canvas */
     #confettiCanvas {
       position: fixed;
       inset: 0;
+      width: 100vw;
+      height: 100vh;
       pointer-events: none;
       z-index: 10;
     }
@@ -215,10 +218,20 @@
     const result = document.getElementById("result");
     const hint = document.getElementById("hint");
 
-    const confettiInstance = confetti.create(
-      document.getElementById("confettiCanvas"),
-      { resize: true }
-    );
+    /* ---- CONFETTI ---- */
+    const confettiCanvas = document.getElementById("confettiCanvas");
+
+    function resizeConfettiCanvas() {
+      const dpr = Math.max(1, window.devicePixelRatio || 1);
+      confettiCanvas.width = window.innerWidth * dpr;
+      confettiCanvas.height = window.innerHeight * dpr;
+      confettiCanvas.style.width = window.innerWidth + "px";
+      confettiCanvas.style.height = window.innerHeight + "px";
+    }
+
+    resizeConfettiCanvas();
+    window.addEventListener("resize", resizeConfettiCanvas);
+    const confettiInstance = confetti.create(confettiCanvas, { resize: true, useWorker: true });
 
     /* YES BUTTON GROW LOGIC */
     let yesScale = 1;
@@ -247,7 +260,7 @@
       noBtn.style.top  = top  + "px";
       noBtn.style.transform = "none";
 
-      growYes(); // 👈 THIS is the key part
+      growYes();
     }
 
     zone.addEventListener("pointermove", e => {
@@ -264,12 +277,20 @@
       hint.style.display = "none";
       result.style.display = "block";
 
-      confettiInstance({
-        particleCount: 320,
-        spread: 160,
-        startVelocity: 65,
-        colors: ["#ff3b7a", "#ff7aa2", "#ffd1e3"]
-      });
+      // Confetti from center of screen
+      const duration = 2000;
+      const end = Date.now() + duration;
+
+      (function frame() {
+        confettiInstance({
+          particleCount: 8,
+          angle: Math.random() * 60 + 60,
+          spread: 55,
+          origin: { x: Math.random(), y: Math.random() * 0.3 },
+          colors: ["#ff3b7a", "#ff7aa2", "#ffd1e3"]
+        });
+        if (Date.now() < end) requestAnimationFrame(frame);
+      })();
     });
   </script>
 </body>
